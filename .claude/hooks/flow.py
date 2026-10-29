@@ -28,6 +28,7 @@ SPEC_KIT_DIRS = {"contracts", "checklists"}
 REFS_SKIP = (".claude/", ".specify/scripts/", ".specify/templates/", ".specify/integrations/",
              ".specify/workflows/", ".git/")
 LOCAL_SETTINGS = ".claude/settings.local.json"
+FIXED_MESSAGE = "{name} is a fixed workflow file. Propose the change; a person edits it and runs rehash."
 PLACEHOLDER = re.compile(r"\[[A-Z][A-Z0-9]*_[A-Z0-9_]+\]")  # Spec Kit tokens always contain "_"
 HARMLESS_REDIRECT = re.compile(r"\d?>&\d|\d?>\s*(/dev/null|\$null|NUL)\b", re.I)
 WRITE_HINT = re.compile(r">|\b(sed\s+-i|tee|rm|mv|truncate|Set-Content|Add-Content|Out-File|"
@@ -146,7 +147,7 @@ def guard(event):
             block("guard: no file path in the tool call")
         name = locked(Path(path) if Path(path).is_absolute() else ROOT / path)
         if name:
-            block(f"{name} is a fixed workflow file. Propose the change; a person edits it and runs rehash.")
+            block(FIXED_MESSAGE.format(name=name))
     elif tool in ("Bash", "PowerShell"):
         command = args.get("command", "")
         if re.search(r"flow\.py\s+rehash", command):
@@ -156,7 +157,7 @@ def guard(event):
         if WRITE_HINT.search(HARMLESS_REDIRECT.sub("", command)):
             for name in protected():
                 if name.lower() in command.replace("\\", "/").lower():
-                    block(f"{name} is a fixed workflow file. Propose the change instead.")
+                    block(FIXED_MESSAGE.format(name=name))
 
 
 def refs(term):

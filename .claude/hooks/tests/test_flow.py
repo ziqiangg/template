@@ -159,6 +159,12 @@ class GuardTest(unittest.TestCase):
         self.assertEqual(self.bash("echo x > CLAUDE.md").returncode, 2)
         self.assertEqual(self.bash("sed -i s/a/b/ .claude/agents/reviewer.md").returncode, 2)
 
+    def test_edit_and_shell_blocks_give_the_same_message(self):
+        via_edit = self.edit("CLAUDE.md").stderr
+        via_shell = self.bash("echo x > CLAUDE.md").stderr
+        self.assertEqual(via_edit, via_shell)
+        self.assertIn("a person edits it and runs rehash", via_edit)
+
     def test_allows_bash_read_of_locked_file(self):
         self.assertEqual(self.bash("cat CLAUDE.md | head -5").returncode, 0)
         self.assertEqual(self.bash("cat .claude/instructions/plan.md 2>&1 | head").returncode, 0)

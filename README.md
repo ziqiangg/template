@@ -19,7 +19,12 @@ track, so there is no decision log to keep up to date.
 
 ## Prerequisites
 Git (with Git Bash on Windows, which Claude Code uses for hooks), Python 3.11+, PowerShell 7 (`pwsh`),
-Node 20+, [uv](https://docs.astral.sh/uv/), [pre-commit](https://pre-commit.com/) and Claude Code.
+Node 20+, [uv](https://docs.astral.sh/uv/) and Claude Code. Then, once per machine:
+
+```
+uv tool install specify-cli
+uv tool install pre-commit
+```
 
 Optional, used by the agents:
 - **Claude in Chrome** (ui-checker): install the extension, then run `/chrome` in Claude Code.

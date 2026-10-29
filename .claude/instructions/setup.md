@@ -33,4 +33,5 @@ Edit `scripts/gate.ps1`: delete the `GATE-NOT-CONFIGURED` comment line and fill 
 lint, type, test and build commands (for React code also `npx react-doctor@latest <dir> --verbose`).
 The script already stops at the first failure and prints only failures and a summary. Never add `git add`, `--fix` or `pre-commit` to it (pre-commit runs the gate).
 
+Check `pre-commit --version`; if it is missing, ask the user to run `uv tool install pre-commit`.
 Install the commit hook once: `pre-commit install`. Run `pre-commit run --all-files` and show the result. Then the state moves to IDLE; next is the foundation feature (intake.md).
