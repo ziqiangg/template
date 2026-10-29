@@ -3,6 +3,7 @@
 ## Brief (written by the main session)
 - Goal in one sentence; the feature path; task ids or the question to answer.
 - Acceptance checks the agent must meet.
+- The exact skill call the agent must make, if any (implementer: `/speckit-implement <phase, task ids>`).
 - Pointers to sources (`specs/<feature>/spec.md` FR-012, `file:line`), never a paraphrase of them.
 
 ## Sources an agent follows, in this order

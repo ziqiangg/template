@@ -85,7 +85,7 @@ class StateTest(unittest.TestCase):
 
     def test_foundation_spec_does_not_wait_for_a_plan(self):
         self.repo.feature("000-foundation", **{"spec.md": "glossary\n"})
-        self.assertIn("STATE=FINISH", self.repo.state())
+        self.assertIn("STATE=CLARIFY", self.repo.state())
         self.repo.commit()
         self.assertIn("STATE=IDLE", self.repo.state())
 
@@ -170,6 +170,15 @@ class GuardTest(unittest.TestCase):
         self.assertEqual(self.bash("cat .claude/instructions/plan.md 2>&1 | head").returncode, 0)
         self.assertEqual(self.bash("grep x CLAUDE.md 2>/dev/null").returncode, 0)
         self.assertEqual(self.bash("cp CLAUDE.md /tmp/x").returncode, 0)
+
+    def test_write_and_fixed_read_in_separate_segments_are_allowed(self):
+        state = "python -I .claude/hooks/flow.py state"
+        self.assertEqual(self.bash(f'git commit -m "a -> b" && {state}').returncode, 0)
+        self.assertEqual(self.bash(f"printf 'x' >> specs/001-demo/tasks.md && {state}").returncode, 0)
+        self.assertEqual(self.bash("sed -i s/a/b/ specs/x.md; cat .claude/agents/reviewer.md").returncode, 0)
+
+    def test_write_to_fixed_file_in_a_later_segment_is_blocked(self):
+        self.assertEqual(self.bash("cat src/a.js && echo y > CLAUDE.md").returncode, 2)
 
     def test_blocks_powershell_write_to_locked_file(self):
         r = self.guard({"tool_name": "PowerShell", "tool_input": {"command": "Set-Content CLAUDE.md x"}})

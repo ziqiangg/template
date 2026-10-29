@@ -9,7 +9,9 @@ Follow `.claude/instructions/agent-contract.md`. The brief gives the app's addre
 
 1. Call tabs_context_mcp first, then work in a new tab. Never submit forms that send, pay, delete or start
    paid work; never trigger browser dialogs. If the browser does not respond after 2 tries, stop and report.
-2. Walk each flow from the spec's user stories. Repeat key screens at a narrow width (about 400 px).
+2. Walk each flow from the spec's user stories. Repeat key screens at a narrow width (about 400 px): after
+   resizing, read the page's real width; if it did not shrink, report "narrow width not verified in the
+   browser" and check the layout rules in the CSS instead.
 3. Report, per screen, with a screenshot reference or quoted text:
    - **Wording:** sentences you had to read twice, jargon, labels that disagree with the glossary.
    - **Process leaks:** development words on screen (task ids, phases, states, agent names, "spec", "FR-").

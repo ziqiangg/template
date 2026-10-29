@@ -19,7 +19,7 @@ Always:
 - One home per fact: product behaviour in `specs/<feature>/`, principles in
   `.specify/memory/constitution.md`, gate commands in `scripts/gate.ps1`. Edit in place; git history is the archive.
 - Only this session asks the user: batched rounds, each question explains the mechanism and gives options,
-  a recommendation and the cost of each.
+  a recommendation and the cost of each. Inside a Spec Kit command that asks its own questions, follow its flow.
 - Brief subagents per `.claude/instructions/agent-contract.md`.
 - Replies of 250 words or less; trim command output; every outside fact carries its URL.
 - Stage, commit or push only after showing what changed and getting the user's yes.

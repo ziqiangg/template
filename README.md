@@ -34,8 +34,9 @@ Optional, used by the agents:
 1. Copy this folder (without `.git`) to the new project and run `git init`.
 2. Open Claude Code in the project. It starts in the SETUP state and walks you through:
    the constitution (`/speckit-constitution`), the gate commands in `scripts/gate.ps1`, and `pre-commit install`.
-3. Describe what you want to build. Intake asks about users and stories, flow and screens, naming, and
-   what is out of scope, then Spec Kit takes over: specify, clarify, plan, tasks, implement.
+3. Describe what you want to build. The first feature, the foundation, asks about users and goals, the
+   screen map, naming and what is out of scope. Each later feature asks for its user stories, then Spec Kit
+   takes over: specify, clarify, plan, tasks, implement.
 
 ## How the workflow runs
 The state is computed from Spec Kit's own files each time; nothing stores it.
@@ -44,8 +45,9 @@ The state is computed from Spec Kit's own files each time; nothing stores it.
 SETUP -> IDLE -> (intake questions, /speckit-specify) -> CLARIFY (-> plan) -> TASKS -> IMPLEMENT -> FINISH -> IDLE
          any state: a change to existing behaviour -> CHANGE -> back to IMPLEMENT or FINISH
 ```
-The first feature, `000-foundation`, holds the glossary, naming conventions, flow and screens. It goes
-through clarify only and has no plan or tasks.
+The first feature, `000-foundation`, holds what every feature shares: users and goals, the screen map,
+the glossary and naming conventions, and what is out of scope. It goes through clarify only and has no
+stories, plan or tasks; each story lives in the one feature spec that builds it.
 
 - Product decisions are edited into the feature spec in place; principles into the constitution.
   Git history is the archive.
@@ -72,6 +74,11 @@ specify integration upgrade claude
 ```
 Spec Kit's files are not hash-locked, so no rehash is needed. Check the release notes for renamed commands
 and update the instruction files if any changed.
+
+## Known issue
+On Windows, Spec Kit's PowerShell scripts can garble the emoji in Spec Kit's own templates (development
+documents only, never the app) and print broken JSON. The commands still work around it. Spec Kit also
+ships Python scripts (`specify init ... --script py`), which may avoid this; not yet tried.
 
 ## Tests for the tooling
 `python -m unittest discover -s .claude/hooks/tests`

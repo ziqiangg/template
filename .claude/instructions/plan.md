@@ -8,4 +8,8 @@
    change that goes through change.md and the user; never a silent exception.
 4. Technical choices the user should own (a new dependency, a storage format, a paid service) are asked in
    a batched round before the plan is final.
-5. The state moves to TASKS.
+5. Run `/speckit-checklist` for requirements quality (and for UX when the feature has screens). Let it ask
+   its own intent questions. The user is the checklist's reviewer: show each item that fails, with the
+   spec or plan fix you propose, in a batched round. Apply the fixes the user accepts and tick `[x]` only
+   the items the user approves. `/speckit-implement` stops on any unticked item.
+6. The state moves to TASKS.

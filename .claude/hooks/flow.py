@@ -89,8 +89,8 @@ def current_state():
     has = {name: (ROOT / feature / name).is_file() for name in ("spec.md", "plan.md", "tasks.md")}
     if not has["spec.md"]:
         return "INTAKE", feature
-    if feature.endswith("-foundation"):  # product knowledge only: no plan or tasks
-        return ("FINISH" if tree_dirty() else "IDLE"), feature
+    if feature.endswith("-foundation"):  # shared product knowledge only: clarified, then committed
+        return ("CLARIFY" if tree_dirty() else "IDLE"), feature
     if not has["plan.md"]:
         return "CLARIFY", feature
     if not has["tasks.md"]:
@@ -154,10 +154,12 @@ def guard(event):
             block("rehash is run by a person only.")
         if event.get("agent_id") and GIT_COMMIT.search(command):
             block("Agents never commit or push. Report back; the main session commits after approval.")
-        if WRITE_HINT.search(HARMLESS_REDIRECT.sub("", command)):
-            for name in protected():
-                if name.lower() in command.replace("\\", "/").lower():
-                    block(FIXED_MESSAGE.format(name=name))
+        # a segment must both write and name a fixed file; `write x && read fixed` is fine
+        for segment in re.split(r"&&|\|\|?|;|\n", command):
+            if WRITE_HINT.search(HARMLESS_REDIRECT.sub("", segment)):
+                for name in protected():
+                    if name.lower() in segment.replace("\\", "/").lower():
+                        block(FIXED_MESSAGE.format(name=name))
 
 
 def refs(term):
