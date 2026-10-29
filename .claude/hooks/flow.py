@@ -89,13 +89,17 @@ def checklists_approved(feature):
 
 
 def unfinished(active):
-    """Other features with unticked tasks, so a feature switch never hides open work."""
+    """Other features with unticked tasks or uncommitted changes, so a feature switch never hides work."""
     found = []
-    for tasks in sorted((ROOT / "specs").glob("*/tasks.md")):
-        folder = rel(tasks.parent.relative_to(ROOT))
-        count = len(OPEN_ITEM.findall(tasks.read_text(encoding="utf-8")))
-        if folder != active and count:
+    for path in sorted(p for p in (ROOT / "specs").glob("*") if p.is_dir()):
+        folder = rel(path.relative_to(ROOT))
+        if folder == active:
+            continue
+        count = len(OPEN_ITEM.findall(read(f"{folder}/tasks.md")))
+        if count:
             found.append(f"{folder} ({count} open task{'s' if count > 1 else ''})")
+        elif tree_dirty(folder):
+            found.append(f"{folder} (uncommitted)")
     return found
 
 

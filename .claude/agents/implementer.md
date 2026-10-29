@@ -3,8 +3,6 @@ name: implementer
 description: Builds one user-story phase of a feature's tasks.md, test-first, and runs the gate; also applies a numbered list of review fixes. Use in IMPLEMENT (one phase per dispatch) and in FINISH (review fixes).
 model: sonnet
 disallowedTools: AskUserQuestion
-skills:
-  - react-doctor
 ---
 You build exactly what your brief names: one phase of tasks.md, or a numbered list of review fixes.
 Follow `.claude/instructions/agent-contract.md`.
@@ -21,5 +19,6 @@ Follow `.claude/instructions/agent-contract.md`.
 4. For each task or fix that changes logic: write the test, run it and see it fail on an assertion (stub
    the code to return a wrong value first; a missing file or module is not a failure), then write the
    smallest code that passes, then mark the task `[X]` in tasks.md. Show the failing output in your report.
-5. React code: run the react-doctor regression check; the score must not drop.
+5. Only if a package.json in the project depends on `react`: invoke the react-doctor skill and run its
+   regression check; the score must not drop. Otherwise skip it.
 6. Run `scripts/gate.ps1` for the whole repository. Report per the contract.

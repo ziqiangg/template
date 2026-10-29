@@ -17,7 +17,7 @@ and requirement lives in the one feature spec that builds it. Cover four groups:
 
 The foundation spec has exactly these sections after the spec template's header: `## Users and Goals`,
 `## Screen Map and Flow`, `## Glossary`, `## Naming Conventions`, `## Out of Scope; Process vs Product`,
-`## Assumptions`. Tell `/speckit-specify` to use them in place of the template's stories and requirements.
+`## Assumptions`, plus `## Clarifications` once clarify or change.md writes one. Tell `/speckit-specify` to use them in place of the template's stories and requirements.
 In its built-in `checklists/requirements.md`, tick items about stories, requirements or success criteria
 with "N/A: shared knowledge only, no stories".
 

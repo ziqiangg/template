@@ -125,6 +125,13 @@ class StateTest(unittest.TestCase):
         self.assertIn("STATE=CLARIFY feature=specs/002-next", out)
         self.assertIn("unfinished: specs/001-demo (2 open tasks)", out)
 
+    def test_state_lists_other_uncommitted_features(self):
+        self.repo.feature("001-demo", **{"spec.md": "s\n", "plan.md": "p\n", "tasks.md": "- [x] a\n"})
+        self.repo.commit()
+        self.repo.write("specs/001-demo/spec.md", "s changed\n")
+        self.repo.feature("002-next", **{"spec.md": "s\n"})
+        self.assertIn("unfinished: specs/001-demo (uncommitted)", self.repo.state())
+
     def test_tasks_when_plan_and_checklist_approved(self):
         self.repo.feature(**{"spec.md": "s\n", "plan.md": "p\n", "checklists__ux.md": "- [x] CHK001 a\n"})
         self.assertIn("STATE=TASKS", self.repo.state())
