@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(./secrets/**)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "python -I \"$CLAUDE_PROJECT_DIR/.claude/hooks/flow.py\" state",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "python -I \"$CLAUDE_PROJECT_DIR/.claude/hooks/flow.py\" guard || exit 2",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "python -I \"$CLAUDE_PROJECT_DIR/.claude/hooks/flow.py\" stop",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

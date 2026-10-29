@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: mixed-line-ending
+        args: ["--fix=no"]
+      - id: end-of-file-fixer
+        exclude: ^\.claude/skills/|^\.specify/
+  - repo: local
+    hooks:
+      - id: flow-verify
+        name: workflow rules (fixed files, open clarifications, files in specs/)
+        entry: python -I .claude/hooks/flow.py verify
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: gate
+        name: gate (scripts/gate.ps1)
+        entry: pwsh -NoProfile -File scripts/gate.ps1
+        language: system
+        pass_filenames: false
+        always_run: true
