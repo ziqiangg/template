@@ -18,6 +18,8 @@ and requirement lives in the one feature spec that builds it. Cover four groups:
 The foundation spec has exactly these sections after the spec template's header: `## Users and Goals`,
 `## Screen Map and Flow`, `## Glossary`, `## Naming Conventions`, `## Out of Scope; Process vs Product`,
 `## Assumptions`. Tell `/speckit-specify` to use them in place of the template's stories and requirements.
+In its built-in `checklists/requirements.md`, tick items about stories, requirements or success criteria
+with "N/A: shared knowledge only, no stories".
 
 ## Any later feature
 Ask what this feature lets which user do: its stories in priority order (P1, P2, ...), each independently

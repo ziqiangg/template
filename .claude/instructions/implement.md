@@ -1,7 +1,8 @@
 # IMPLEMENT: build one user-story phase at a time
 
-0. If no task in tasks.md is ticked yet, run `/speckit-analyze` first (it may not have run) and fix
-   CRITICAL and HIGH findings at their source.
+0. Before the first phase (no task in tasks.md ticked yet), run `/speckit-analyze`. It is read-only: show
+   its report in the reply, never save it to a file. Fix every CRITICAL and HIGH finding at its source
+   (spec, plan or tasks) and run it again; ask the user about any finding that needs a decision.
 1. Every item in `checklists/` must be ticked by the user's approval (plan.md step 5); otherwise settle
    them with the user first, because `/speckit-implement` stops on unticked items.
 2. Pick the next unchecked phase in tasks.md. Dispatch the implementer with a brief per agent-contract.md:

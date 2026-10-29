@@ -35,7 +35,7 @@ WRITE_HINT = re.compile(r">|\b(sed\s+-i|tee|rm|mv|truncate|Set-Content|Add-Conte
                         r"Remove-Item|Move-Item|Copy-Item|git\s+(checkout|restore|rm|mv))\b")
 GIT_COMMIT = re.compile(r"(^|[;&|(]|\n)\s*git(\s+-\S+(\s+[^-\s]\S*)?)*\s+(commit|push)\b")
 INSTRUCTION = {"SETUP": "setup.md", "INTAKE": "intake.md", "CLARIFY": "clarify.md",
-               "TASKS": "tasks.md", "IMPLEMENT": "implement.md", "FINISH": "finish.md"}
+               "PLAN": "plan.md", "TASKS": "tasks.md", "IMPLEMENT": "implement.md", "FINISH": "finish.md"}
 
 
 def rel(path):
@@ -73,15 +73,37 @@ def active_feature():
     return rel(folder) if folder and (ROOT / folder).is_dir() else None
 
 
-def tree_dirty():
-    out = subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain"],
+def tree_dirty(*paths):
+    out = subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain", "--", *paths],
                          capture_output=True, text=True).stdout
     return bool(out.strip())
+
+
+OPEN_ITEM = re.compile(r"^\s*- \[ \]", re.M)
+
+
+def checklists_approved(feature):
+    """A custom checklist (other than Spec Kit's built-in requirements.md) exists and is fully ticked."""
+    custom = [p for p in (ROOT / feature / "checklists").glob("*.md") if p.name != "requirements.md"]
+    return bool(custom) and not any(OPEN_ITEM.search(p.read_text(encoding="utf-8")) for p in custom)
+
+
+def unfinished(active):
+    """Other features with unticked tasks, so a feature switch never hides open work."""
+    found = []
+    for tasks in sorted((ROOT / "specs").glob("*/tasks.md")):
+        folder = rel(tasks.parent.relative_to(ROOT))
+        count = len(OPEN_ITEM.findall(tasks.read_text(encoding="utf-8")))
+        if folder != active and count:
+            found.append(f"{folder} ({count} open task{'s' if count > 1 else ''})")
+    return found
 
 
 def current_state():
     constitution = re.sub(r"<!--.*?-->", "", read(CONSTITUTION), flags=re.S)
     if PLACEHOLDER.search(constitution) or GATE_STUB in read(GATE) or not read(GATE):
+        return "SETUP", None
+    if tree_dirty(CONSTITUTION, GATE):  # the base is ratified only once committed
         return "SETUP", None
     feature = active_feature()
     if not feature:
@@ -94,8 +116,8 @@ def current_state():
     if not has["plan.md"]:
         return "CLARIFY", feature
     if not has["tasks.md"]:
-        return "TASKS", feature
-    if re.search(r"^\s*- \[ \]", read(f"{feature}/tasks.md"), re.M):
+        return ("TASKS" if checklists_approved(feature) else "PLAN"), feature
+    if OPEN_ITEM.search(read(f"{feature}/tasks.md")):
         return "IMPLEMENT", feature
     return ("FINISH" if tree_dirty() else "IDLE"), feature
 
@@ -182,6 +204,9 @@ def main(argv):
         where = f" feature={feature}" if feature else ""
         read_first = f".claude/instructions/{INSTRUCTION[state]}" if state in INSTRUCTION else "CLAUDE.md (IDLE row)"
         print(f"STATE={state}{where} -> read {read_first}")
+        others = unfinished(feature)
+        if others:
+            print("unfinished: " + "; ".join(others))
     elif command == "guard":
         guard(json.loads(sys.stdin.read()))
     elif command == "stop":

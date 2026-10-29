@@ -6,10 +6,7 @@
    order, then Polish. Do not regroup tasks into phases of your own. Tell it:
    - every logic task gets a test task before it (the constitution's test-first principle), whatever the
      tasks template says about tests being optional;
-   - a task points to its requirement or scenario ("per FR-001, US1 scenario 1") instead of restating
-     values, because tasks.md is a work log, not a home for facts;
+   - quote data-model constraints verbatim, as the command asks; for everything else a task points to its
+     requirement or scenario ("per FR-001, US1 scenario 1") instead of restating it;
    - manual or browser walkthroughs are never tasks; FINISH does them with the ui-checker.
-2. Run `/speckit-analyze`. It is read-only: show its report in the reply, never save it to a file.
-3. Fix every CRITICAL and HIGH finding at its source (spec, plan or tasks), then run analyze again.
-   Ask the user about any finding that needs a decision.
-4. The state moves to IMPLEMENT.
+2. The state moves to IMPLEMENT, which runs `/speckit-analyze` before the first phase.

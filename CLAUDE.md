@@ -9,11 +9,15 @@ The current state is printed at session start (`STATE=...`). If it is missing, r
 | SETUP | constitution or gate not set up yet | `.claude/instructions/setup.md` |
 | IDLE | nothing in progress | new work → `intake.md`; change to existing behaviour → `change.md` |
 | INTAKE | feature folder without a spec (an interrupted specify) | `.claude/instructions/intake.md` |
-| CLARIFY | spec written, no plan yet | `.claude/instructions/clarify.md`, then `plan.md` |
-| TASKS | plan written, no tasks yet | `.claude/instructions/tasks.md` |
+| CLARIFY | spec written, no plan yet | `.claude/instructions/clarify.md` |
+| PLAN | plan written, checklist not yet approved | `.claude/instructions/plan.md` |
+| TASKS | plan and checklist approved, no tasks yet | `.claude/instructions/tasks.md` |
 | IMPLEMENT | unchecked tasks | `.claude/instructions/implement.md` |
 | FINISH | all tasks done, changes not committed | `.claude/instructions/finish.md` |
 | any | the request changes an existing spec, plan or principle | `.claude/instructions/change.md` |
+
+The state follows the active feature (`.specify/feature.json`). An `unfinished:` line names other features
+with open tasks; ask the user before switching to one.
 
 Always:
 - One home per fact: product behaviour in `specs/<feature>/`, principles in

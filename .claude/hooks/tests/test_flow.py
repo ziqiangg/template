@@ -81,6 +81,7 @@ class StateTest(unittest.TestCase):
     def test_ratified_constitution_with_bracketed_words_is_not_setup(self):
         self.repo.write(".specify/memory/constitution.md",
                         "<!-- Sync report: [PROJECT_NAME] replaced -->\n" + RATIFIED + "Each [US1] story [MUST] pass.\n")
+        self.repo.commit()
         self.assertNotIn("STATE=SETUP", self.repo.state())
 
     def test_foundation_spec_does_not_wait_for_a_plan(self):
@@ -102,8 +103,30 @@ class StateTest(unittest.TestCase):
         self.repo.feature(**{"spec.md": "# Spec\n"})
         self.assertIn("STATE=CLARIFY", self.repo.state())
 
-    def test_tasks_when_plan_but_no_tasks(self):
-        self.repo.feature(**{"spec.md": "s\n", "plan.md": "p\n"})
+    def test_setup_while_constitution_or_gate_uncommitted(self):
+        self.repo.write(".specify/memory/constitution.md", RATIFIED + "More.\n")
+        self.assertIn("STATE=SETUP", self.repo.state())
+        self.repo.commit()
+        self.repo.write("scripts/gate.ps1", GATE_DONE + "node --test\n")
+        self.assertIn("STATE=SETUP", self.repo.state())
+
+    def test_plan_until_a_custom_checklist_is_fully_ticked(self):
+        self.repo.feature(**{"spec.md": "s\n", "plan.md": "p\n", "checklists__requirements.md": "- [x] a\n"})
+        self.assertIn("STATE=PLAN", self.repo.state())
+        self.repo.feature(**{"checklists__ux.md": "- [x] CHK001 a\n- [ ] CHK002 b\n"})
+        self.assertIn("STATE=PLAN", self.repo.state())
+        self.repo.feature(**{"checklists__ux.md": "- [x] CHK001 a\n- [X] CHK002 b\n"})
+        self.assertIn("STATE=TASKS", self.repo.state())
+
+    def test_state_lists_other_unfinished_features(self):
+        self.repo.feature("001-demo", **{"spec.md": "s\n", "plan.md": "p\n", "tasks.md": "- [x] a\n- [ ] b\n- [ ] c\n"})
+        self.repo.feature("002-next", **{"spec.md": "s\n"})
+        out = self.repo.state()
+        self.assertIn("STATE=CLARIFY feature=specs/002-next", out)
+        self.assertIn("unfinished: specs/001-demo (2 open tasks)", out)
+
+    def test_tasks_when_plan_and_checklist_approved(self):
+        self.repo.feature(**{"spec.md": "s\n", "plan.md": "p\n", "checklists__ux.md": "- [x] CHK001 a\n"})
         self.assertIn("STATE=TASKS", self.repo.state())
 
     def test_implement_when_unchecked_tasks(self):
@@ -121,7 +144,7 @@ class StateTest(unittest.TestCase):
 
     def test_state_names_instruction_file(self):
         self.repo.feature(**{"spec.md": "s\n", "plan.md": "p\n"})
-        self.assertIn(".claude/instructions/tasks.md", self.repo.state())
+        self.assertIn(".claude/instructions/plan.md", self.repo.state())
 
 
 class GuardTest(unittest.TestCase):

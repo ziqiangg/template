@@ -42,7 +42,7 @@ Optional, used by the agents:
 The state is computed from Spec Kit's own files each time; nothing stores it.
 
 ```
-SETUP -> IDLE -> (intake questions, /speckit-specify) -> CLARIFY (-> plan) -> TASKS -> IMPLEMENT -> FINISH -> IDLE
+SETUP -> IDLE -> (intake questions, /speckit-specify) -> CLARIFY -> PLAN -> TASKS -> IMPLEMENT -> FINISH -> IDLE
          any state: a change to existing behaviour -> CHANGE -> back to IMPLEMENT or FINISH
 ```
 The first feature, `000-foundation`, holds what every feature shares: users and goals, the screen map,

@@ -12,6 +12,8 @@ Follow `.claude/instructions/agent-contract.md`.
 1. Read the constitution, the foundation spec's naming conventions and glossary, and the feature's spec,
    plan, data-model and contracts for your work. Every name you create (file, id, endpoint, field,
    variable, HTML id, UI label) follows those conventions; a name they do not cover is a QUESTION.
+   Any user-visible text or element that the spec or contracts do not give is also a QUESTION: product
+   wording is decided in the spec, not in code.
 2. A phase: run the skill call from your brief (`/speckit-implement <phase, task ids>`). If it would ask
    the user anything, stop and return that as a QUESTION. Say in your report that the skill ran.
 3. Create only files named in plan.md or tasks.md (or, for review fixes, in the fix list). Any other file,
