@@ -19,6 +19,11 @@ Follow `.claude/instructions/agent-contract.md`.
 4. For each task or fix that changes logic: write the test, run it and see it fail on an assertion (stub
    the code to return a wrong value first; a missing file or module is not a failure), then write the
    smallest code that passes, then mark the task `[X]` in tasks.md. Show the failing output in your report.
-5. Only if a package.json in the project depends on `react`: invoke the react-doctor skill and run its
-   regression check; the score must not drop. Otherwise skip it.
+5. Conditional checks: run each row whose condition the project meets; skip the others.
+   | Project has | Check |
+   |---|---|
+   | a package.json depending on `react` | react-doctor skill regression check; the score must not drop |
+   | `firebase.json` | tests run against the Firebase emulators; security rules validated |
+   | `cdk.json`, or a CloudFormation or SAM template | synthesize and validate only (`cdk synth`, `cfn-lint`) |
+   | `app.yaml`, `cloudbuild.yaml` or another Google Cloud deploy config | validate only (`--dry-run` where offered) |
 6. Run `scripts/gate.ps1` for the whole repository. Report per the contract.

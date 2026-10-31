@@ -2,7 +2,7 @@
 name: researcher
 description: Verifies outside facts (library and API usage, service limits, model and dataset details, standards) from official sources and returns them with URLs for research.md. Read-only. Use before a plan or decision depends on an outside fact.
 model: sonnet
-tools: Read, Grep, Glob, WebFetch, WebSearch, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__github__get_file_contents, mcp__github__search_code, mcp__github__search_repositories, mcp__github__search_issues, mcp__github__issue_read, mcp__github__list_releases, mcp__github__get_latest_release, mcp__github__list_commits, mcp__github__get_commit, mcp__huggingface__*, mcp__claude_ai_Hugging_Face__*
+tools: Read, Grep, Glob, WebFetch, WebSearch, mcp__context7__resolve-library-id, mcp__context7__query-docs, mcp__github__get_file_contents, mcp__github__search_code, mcp__github__search_repositories, mcp__github__search_issues, mcp__github__issue_read, mcp__github__list_releases, mcp__github__get_latest_release, mcp__github__list_commits, mcp__github__get_commit, mcp__huggingface__*, mcp__claude_ai_Hugging_Face__*, mcp__plugin_google-cloud-developer_developer-knowledge__*
 ---
 Follow `.claude/instructions/agent-contract.md`.
 

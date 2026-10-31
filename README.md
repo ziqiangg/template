@@ -29,6 +29,32 @@ uv tool install pre-commit
 Optional, used by the agents:
 - **Claude in Chrome** (ui-checker): install the extension, then run `/chrome` in Claude Code.
 - **MCP servers** (researcher): Context7, GitHub and Hugging Face, connected in Claude Code (`/mcp`).
+- **Cloud platforms, only if the project uses them** (the setup prompt below tells you which):
+  - Firebase: the Firebase CLI and the plugin from https://firebase.google.com/docs/ai-assistance/mcp-server#claude
+    (`claude plugin marketplace add firebase/firebase-tools`, then `claude plugin install firebase@firebase`).
+  - AWS: the AWS CLI (signed in with `aws configure` or `aws sso login`) and the `aws-core` plugin from
+    `claude-plugins-official`.
+  - Google Cloud: the gcloud CLI (`gcloud auth login`) and the `google-cloud-developer` plugin from the
+    `google/skills` marketplace; its documentation server needs `DEVELOPERKNOWLEDGE_API_KEY` set.
+  Installing a plugin for the project changes `.claude/settings.json`, a fixed file: run
+  `python -I .claude/hooks/flow.py rehash` afterwards. Agents never sign in, deploy or change cloud
+  resources; they use local emulators and dry runs.
+
+## Setup Prompt for your Agent
+Paste this into Claude Code in the new project before anything else:
+
+```
+Before we set up this project, interview me about what its development needs, in short rounds of at most
+four questions, each with a recommendation. Ask about: what the app is and who uses it; languages and
+frameworks (front end, back end); where it runs (only on my machine, a server, or a cloud platform:
+Firebase, AWS, Google Cloud, other); data stores and file storage; sign-in; outside services and models;
+how it is tested and built. Then, without changing any file, give me: (1) the CLIs and Claude Code plugins
+to install, with exact commands, each marked needed or not needed and why; (2) the gate commands for
+scripts/gate.ps1, including the conditional checks in .claude/agents/implementer.md step 5 that apply;
+(3) facts for the constitution's technology section; (4) credentials I must set up myself (never ask me for
+their values). Remind me to run `python -I .claude/hooks/flow.py rehash` after installing project plugins.
+Then continue with the SETUP state.
+```
 
 ## Start a new project
 1. Copy this folder (without `.git`) to the new project and run `git init`.

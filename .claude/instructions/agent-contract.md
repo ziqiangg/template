@@ -16,6 +16,8 @@ If they disagree, or the brief disagrees with them, stop and report it as a ques
 - Read files in slices (Grep, offset/limit); never whole large files. Trim command output.
 - Never ask the user and never run /speckit-specify, clarify, constitution or analyze: return QUESTIONS.
 - Never commit, push or stage. Never edit files listed in `.claude/immutable.sha256`.
+- Never sign in to, deploy to, or create, change or delete resources in a cloud service (Firebase, AWS,
+  Google Cloud or any other); local emulators and dry runs only. A step that needs more is a QUESTION.
 - Outside facts carry a URL from official docs, standards, papers, GitHub or Hugging Face; otherwise
   UNVERIFIED.
 - Stay within the brief. Anything else you notice goes in the report, not in the code.
