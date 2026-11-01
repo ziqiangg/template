@@ -17,9 +17,11 @@ screen map, a plan, or the constitution. It ends with every home updated, so not
    - constitution: run `/speckit-constitution` (it versions the change);
    - unticked tasks that quote a changed constraint: edit the quote to match;
    - code, tests and config that follow the old behaviour: add tasks for them (next step), do not edit here.
-5. **Re-derive work.** `/speckit-converge` (adds tasks for unbuilt work), then `/speckit-analyze`, on each
-   affected feature that has tasks.md; after a foundation change, on every feature that has tasks.md,
-   because built features follow its rules without naming them. Each feature runs once per change. Spec Kit commands act on the active
+5. **Re-derive work, once per batch.** A batch is every change made between two implement phases. After
+   the batch's last change and before the next implement phase starts, run `/speckit-converge` (it adds
+   the tasks for unbuilt work; never write them by hand), then `/speckit-analyze`, once on each affected
+   feature that has tasks.md; after a foundation change, on every feature that has tasks.md, because
+   built features follow its rules without naming them. Spec Kit commands act on the active
    feature: for another feature, set `feature_directory` in `.specify/feature.json` to it, run the
    commands and build its new tasks, then set it back to the feature that was in progress. Fix CRITICAL
    and HIGH findings at their source. A feature without tasks.md continues its current step.

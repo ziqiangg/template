@@ -75,7 +75,7 @@ def active_feature():
 
 def tree_dirty(*paths):
     out = subprocess.run(["git", "-C", str(ROOT), "status", "--porcelain", "--", *paths],
-                         capture_output=True, text=True).stdout
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
     return bool(out.strip())
 
 
@@ -190,7 +190,7 @@ def guard(event):
 
 def refs(term):
     out = subprocess.run(["git", "-C", str(ROOT), "grep", "-n", "-i", "-F", "--untracked", "-e", term],
-                         capture_output=True, text=True).stdout
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stdout
     hits = [ln for ln in out.splitlines() if not ln.startswith(REFS_SKIP)]
     print("\n".join(hits) if hits else f"no file names '{term}'")
 
@@ -202,6 +202,7 @@ def rehash():
 
 
 def main(argv):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     command = argv[1] if len(argv) > 1 else ""
     if command == "state":
         state, feature = current_state()

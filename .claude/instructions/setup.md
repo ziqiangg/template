@@ -35,8 +35,10 @@ message, then delete the comment before committing.
 ## 3. Fill in the gate
 Edit `scripts/gate.ps1`: delete the `GATE-NOT-CONFIGURED` comment line and fill `$steps` with the project's
 lint, type, test and build commands, plus the command of each conditional check in
-`.claude/agents/implementer.md` step 5 that the project meets (for example `npx react-doctor@latest <dir>
---verbose` for React code, or `firebase emulators:exec "<test command>"` with `firebase.json`).
+`.claude/agents/implementer.md` step 5 that the project meets (for example, for React code, react-doctor
+pinned as a dev dependency in `<dir>/package.json` and run as `npm --prefix <dir> exec -- react-doctor
+<dir> --verbose --blocking error`; npm runs it from the repo root, so name `<dir>`; or `firebase
+emulators:exec "<test command>"` with `firebase.json`).
 The script already stops at the first failure and prints only failures and a summary. Never add `git add`,
 `--fix` or `pre-commit` to it (pre-commit runs the gate).
 
