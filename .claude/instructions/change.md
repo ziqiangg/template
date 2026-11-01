@@ -19,7 +19,8 @@ screen map, a plan, or the constitution. It ends with every home updated, so not
    - code, tests and config that follow the old behaviour: add tasks for them (next step), do not edit here.
 5. **Re-derive work, once per batch.** A batch is every change made between two implement phases. After
    the batch's last change and before the next implement phase starts, run `/speckit-converge` (it adds
-   the tasks for unbuilt work; never write them by hand), then `/speckit-analyze`, once on each affected
+   the tasks for unbuilt work; a task the user chose in a question round may be written by hand first), then
+   `/speckit-analyze`, once on each affected
    feature that has tasks.md; after a foundation change, on every feature that has tasks.md, because
    built features follow its rules without naming them. Spec Kit commands act on the active
    feature: for another feature, set `feature_directory` in `.specify/feature.json` to it, run the
