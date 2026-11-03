@@ -28,8 +28,10 @@ rule goes into the foundation through change.md, never into the feature spec.
 
 ## Then
 1. Summarise the answers back to the user in one message and get a yes.
-2. Run `/speckit-specify` with the summary as its argument. It creates the feature folder and
-   `.specify/feature.json`. Name the folder by what the user gets, not by a phase or task.
-   For the foundation, start the argument with `SPECIFY_FEATURE_DIRECTORY=specs/000-foundation` (otherwise
-   numbering would give it 001).
-3. The state moves to CLARIFY.
+2. Choose the feature number. Spec Kit's numbering sees only local `specs/`, so two developers could pick the
+   same one: run `git fetch`, read `specs/` and `git branch -r`, take the next free number and confirm it with
+   the user. Name the folder by what the user gets, not by a phase or task. The foundation is always `000-foundation`.
+3. From an up-to-date main branch, create the branch: `git switch -c <NNN-name>`.
+4. Run `/speckit-specify` with the summary as its argument, starting with
+   `SPECIFY_FEATURE_DIRECTORY=specs/<NNN-name>`. It creates the feature folder and `.specify/feature.json`.
+5. The state moves to CLARIFY.

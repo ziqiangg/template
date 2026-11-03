@@ -16,8 +16,9 @@ The current state is printed at session start (`STATE=...`). If it is missing, r
 | FINISH | all tasks done, changes not committed | `.claude/instructions/finish.md` |
 | any | the request changes an existing spec, plan or principle | `.claude/instructions/change.md` |
 
-The state follows the active feature (`.specify/feature.json`). An `unfinished:` line names other features
-with open tasks; ask the user before switching to one.
+The state follows the active feature (`.specify/feature.json`, one per clone). An `unfinished:` line names
+other features with open tasks; ask the user before switching to one. Lines about `origin` report what other
+developers pushed: tell the user, and propose the merge they call for.
 
 Always:
 - One home per fact: product behaviour in `specs/<feature>/`, principles in
@@ -26,5 +27,6 @@ Always:
   a recommendation and the cost of each. Inside a Spec Kit command that asks its own questions, follow its flow.
 - Brief subagents per `.claude/instructions/agent-contract.md`.
 - Replies of 250 words or less; trim command output; every outside fact carries its URL.
+- After SETUP, each feature and each shared change gets its own branch, merged through `finish.md`.
 - Stage, commit or push only after showing what changed and getting the user's yes.
 - Files listed in `.claude/immutable.sha256` are fixed. Propose a change; a person edits and runs rehash.

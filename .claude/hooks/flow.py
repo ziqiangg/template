@@ -1,9 +1,10 @@
 """Workflow state and guards for Claude Code hooks and pre-commit. Standard library only.
 
-  state   print the current state and the instruction file to read (SessionStart)
+  state   print the current state and the instruction file to read; --fetch first looks at origin (SessionStart)
   guard   block edits to fixed files and commits from subagents (PreToolUse, exit 2)
   stop    block finishing while a hard rule is broken (Stop / SubagentStop, exit 2)
   verify  the same checks for pre-commit (exit 1)
+  pushcheck  refuse a push with uncommitted changes or without origin's main branch merged (pre-push, exit 1)
   refs    list every file that names a term (blast radius of a change)
   rehash  record the hashes of the fixed files (a person runs this, never Claude)
 """
@@ -23,6 +24,10 @@ FIXED_GLOBS = ["CLAUDE.md", ".claude/settings.json", ".claude/hooks/flow.py",
 GATE = "scripts/gate.ps1"
 GATE_STUB = "GATE-NOT-CONFIGURED"
 CONSTITUTION = ".specify/memory/constitution.md"
+FOUNDATION = "specs/000-foundation/"
+FETCH_AT_START_S = 8  # below the SessionStart hook's timeout; a session must never wait on the network
+FETCH_BEFORE_PUSH_S = 60
+INSTALLED_HOOKS = ("pre-commit", "pre-push")
 SPEC_KIT_FILES = {"spec.md", "plan.md", "tasks.md", "research.md", "data-model.md", "quickstart.md"}
 SPEC_KIT_DIRS = {"contracts", "checklists"}
 REFS_SKIP = (".claude/", ".specify/scripts/", ".specify/templates/", ".specify/integrations/",
@@ -126,6 +131,83 @@ def current_state():
     return ("FINISH" if tree_dirty() else "IDLE"), feature
 
 
+def git(*args, timeout=None):
+    env = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never"}  # never wait on a sign-in
+    return subprocess.run(["git", "-C", str(ROOT), *args], capture_output=True, text=True, encoding="utf-8",
+                          errors="replace", timeout=timeout, env=env)
+
+
+def has_origin():
+    return git("remote", "get-url", "origin").returncode == 0
+
+
+def fetched(timeout):
+    try:
+        return git("fetch", "--quiet", "--prune", "origin", timeout=timeout).returncode == 0
+    except subprocess.TimeoutExpired:
+        return False
+
+
+def origin_main():
+    """Origin's main branch as last fetched; None before anything has been pushed there."""
+    ref = git("symbolic-ref", "--short", "refs/remotes/origin/HEAD").stdout.strip()
+    if ref:
+        return ref
+    for name in ("origin/main", "origin/master"):
+        if git("rev-parse", "--verify", "--quiet", name).returncode == 0:
+            return name
+    return None
+
+
+def other_branches(base):
+    own = "origin/" + git("branch", "--show-current").stdout.strip()
+    names = git("for-each-ref", "refs/remotes/origin", "--no-merged", base,
+                "--format=%(refname:short)").stdout.split()
+    return [name for name in names if name not in (base, own)]
+
+
+def sync_lines():
+    """What other developers have pushed, from the last fetch."""
+    base = origin_main()
+    if not base:
+        return []
+    lines = []
+    count = int(git("rev-list", "--count", f"HEAD..{base}").stdout.strip() or 0)
+    if count:
+        lines.append(f"{base} has {count} commit{'s' if count > 1 else ''} this checkout lacks: merge before pushing.")
+        changed = git("diff", "--name-only", f"HEAD...{base}").stdout.splitlines()
+        fixed = set(recorded())
+        shared = sorted(n for n in changed if n in (CONSTITUTION, GATE) or n in fixed or n.startswith(FOUNDATION))
+        if shared:
+            lines.append(f"shared changed: {', '.join(shared)}. After merging, follow change.md step 5 for your feature.")
+        features = sorted({"/".join(n.split("/")[:2]) for n in changed
+                           if n.startswith("specs/") and not n.startswith(FOUNDATION)})
+        if features:
+            lines.append(f"features changed: {', '.join(features)}")
+    others = other_branches(base)
+    if others:
+        lines.append(f"other branches: {', '.join(others)}")
+    return lines
+
+
+def missing_hooks():
+    hooks = git("rev-parse", "--git-path", "hooks").stdout.strip()
+    return [name for name in INSTALLED_HOOKS if not (ROOT / hooks / name).is_file()]
+
+
+def pushcheck():
+    if tree_dirty():
+        return "uncommitted changes: the gate would test them, not what is being pushed. Commit or stash them first."
+    if not has_origin():
+        return None
+    if not fetched(FETCH_BEFORE_PUSH_S):
+        return "could not reach origin, so this push cannot be checked against what others have pushed."
+    base = origin_main()
+    if base and git("merge-base", "--is-ancestor", base, "HEAD").returncode != 0:
+        return f"this branch lacks {base}: merge it, then push, so the gate tests both people's work together."
+    return None
+
+
 def problems():
     found = []
     hashes = recorded()
@@ -205,6 +287,7 @@ def main(argv):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     command = argv[1] if len(argv) > 1 else ""
     if command == "state":
+        unreachable = "--fetch" in argv and has_origin() and not fetched(FETCH_AT_START_S)
         state, feature = current_state()
         where = f" feature={feature}" if feature else ""
         read_first = f".claude/instructions/{INSTRUCTION[state]}" if state in INSTRUCTION else "CLAUDE.md (IDLE row)"
@@ -212,6 +295,17 @@ def main(argv):
         others = unfinished(feature)
         if others:
             print("unfinished: " + "; ".join(others))
+        if unreachable:
+            print("could not reach origin: other developers' pushes were not checked.")
+        for line in sync_lines():
+            print(line)
+        if state != "SETUP" and missing_hooks():  # SETUP installs them; a new clone never passes through it
+            print("the commit and push checks are not installed in this clone: run `pre-commit install`.")
+    elif command == "pushcheck":
+        reason = pushcheck()
+        if reason:
+            print(reason, file=sys.stderr)
+            sys.exit(1)
     elif command == "guard":
         guard(json.loads(sys.stdin.read()))
     elif command == "stop":

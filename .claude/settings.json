@@ -15,8 +15,8 @@
           {
             "type": "command",
             "shell": "bash",
-            "command": "python -I \"$CLAUDE_PROJECT_DIR/.claude/hooks/flow.py\" state",
-            "timeout": 10
+            "command": "python -I \"$CLAUDE_PROJECT_DIR/.claude/hooks/flow.py\" state --fetch",
+            "timeout": 15
           }
         ]
       }

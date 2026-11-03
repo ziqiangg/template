@@ -64,6 +64,28 @@ Then continue with the SETUP state.
    screen map, naming and what is out of scope. Each later feature asks for its user stories, then Spec Kit
    takes over: specify, clarify, plan, tasks, implement.
 
+## Join a project, or work with another developer
+To join: clone the repository, run `pre-commit install` (each clone needs it; the session start warns if it is
+missing), and create your own `.env` and local services as the project's README says. Open Claude Code.
+
+Each developer works in their own clone, on their own branch and feature. The active feature is per clone.
+
+| When | What checks it |
+|---|---|
+| Session start | Fetches origin and prints new commits on the main branch, shared files and features that changed, and other branches in progress |
+| Push | Refuses uncommitted changes or a branch without origin's main branch merged, then runs the gate, so both people's work is tested together |
+
+The session-start check only runs when a session starts; the push check covers what happens after that. There
+is no hosted CI, so the main branch stays protected only by these hooks and by merging through pull requests.
+
+Team rules, for what the tooling cannot see:
+- Agree feature numbers before starting (intake checks `specs/` and remote branches).
+- Land constitution, foundation and gate changes first, each on its own short branch.
+- Add a gate test for anything numbered in sequence, such as database migrations: two files with the same
+  number merge with no git conflict.
+- Regenerate generated files after a merge; never merge them by hand.
+- Results measured on one machine say which machine.
+
 ## How the workflow runs
 The state is computed from Spec Kit's own files each time; nothing stores it.
 

@@ -21,8 +21,11 @@ screen map, a plan, or the constitution. It ends with every home updated, so not
    the batch's last change and before the next implement phase starts, run `/speckit-converge` (it adds
    the tasks for unbuilt work; a task the user chose in a question round may be written by hand first), then
    `/speckit-analyze`, once on each affected
-   feature that has tasks.md; after a foundation change, on every feature that has tasks.md, because
-   built features follow its rules without naming them. Spec Kit commands act on the active
+   feature that has tasks.md; after a foundation change, on every feature on this branch that has tasks.md,
+   because built features follow its rules without naming them. A feature still on another developer's
+   branch is theirs: they do this for it when their session start names the change, so never edit its
+   files. A change to the constitution, the foundation or the gate goes on its own short branch and is
+   merged (`finish.md`) before feature work continues. Spec Kit commands act on the active
    feature: for another feature, set `feature_directory` in `.specify/feature.json` to it, run the
    commands and build its new tasks, then set it back to the feature that was in progress. Fix CRITICAL
    and HIGH findings at their source. A feature without tasks.md continues its current step.

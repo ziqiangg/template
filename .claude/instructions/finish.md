@@ -13,5 +13,10 @@ For the foundation feature (or a change that touched only specs), skip steps 1, 
 6. Show the user: what was built (by user story), files changed (`git diff --stat`), gate result, review
    and UI findings and how each was settled, what was not verified, and the proposed commit message. If the
    constitution changed, the message carries its Sync Impact Report summary and the comment is deleted.
-7. On the user's yes: `git add` the listed files, commit (pre-commit runs again), push if asked.
-   The state returns to IDLE.
+7. On the user's yes: `git add` the listed files and commit (pre-commit runs again). The state returns to IDLE.
+8. To share it, on the user's yes: push the branch. The pre-push hook refuses uncommitted changes or a branch
+   that lacks origin's main branch, then runs the gate. If it refuses, merge the main branch, run the gate and
+   ask again. For a generated file in conflict, regenerate it instead of merging by hand.
+   Then `gh pr create`. With no remote, skip this step and step 9's `gh`: use `git merge --no-ff`.
+9. To merge, on the user's yes: if the main branch moved since the push, repeat step 8 first. Then
+   `gh pr merge --merge`, `git switch` to the main branch and `git pull`.

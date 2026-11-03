@@ -43,5 +43,5 @@ The script already stops at the first failure and prints only failures and a sum
 `--fix` or `pre-commit` to it (pre-commit runs the gate).
 
 Check `pre-commit --version`; if it is missing, ask the user to run `uv tool install pre-commit`.
-Install the commit hook once: `pre-commit install`. Run `pre-commit run --all-files` and show the result.
+Install the commit and push hooks once: `pre-commit install`. Run `pre-commit run --all-files` and show the result.
 Commit with the user's yes. The state moves to IDLE; next is the foundation feature (intake.md).

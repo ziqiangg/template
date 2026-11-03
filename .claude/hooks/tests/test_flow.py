@@ -154,6 +154,166 @@ class StateTest(unittest.TestCase):
         self.assertIn(".claude/instructions/plan.md", self.repo.state())
 
 
+class TwoClones:
+    """The Repo above pushed to a bare origin, plus a second developer's clone of it."""
+
+    def __init__(self):
+        self.repo = Repo()
+        self.tmp = tempfile.TemporaryDirectory()
+        base = Path(self.tmp.name)
+        self.origin = base / "origin.git"
+        self.other = base / "other"
+        subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(self.origin)], check=True)
+        self.git(self.repo.root, "branch", "-M", "main")
+        self.git(self.repo.root, "remote", "add", "origin", str(self.origin))
+        self.git(self.repo.root, "push", "-q", "-u", "origin", "main")
+        subprocess.run(["git", "clone", "-q", str(self.origin), str(self.other)], check=True)
+
+    @staticmethod
+    def git(root, *args):
+        return subprocess.run(["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t", *args],
+                              check=True, capture_output=True, text=True)
+
+    def other_pushes(self, rel, ref="main"):
+        path = self.other / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("changed\n", encoding="utf-8", newline="\n")
+        self.git(self.other, "add", "-A")
+        self.git(self.other, "commit", "-q", "-m", "other", "--no-verify")
+        self.git(self.other, "push", "-q", "origin", f"HEAD:{ref}")
+
+    def state(self, *args):
+        return run(self.repo.root, "state", *args)
+
+    def close(self):
+        self.repo.close()
+        self.tmp.cleanup()
+
+
+class SyncStateTest(unittest.TestCase):
+    def setUp(self):
+        self.clones = TwoClones()
+        self.addCleanup(self.clones.close)
+
+    def test_nothing_is_said_when_up_to_date(self):
+        self.assertNotIn("origin/", self.clones.state("--fetch").stdout)
+
+    def test_fetch_reports_commits_this_checkout_lacks(self):
+        self.clones.other_pushes("src/a.py")
+        out = self.clones.state("--fetch")
+        self.assertEqual(out.returncode, 0)
+        self.assertIn("origin/main has 1 commit this checkout lacks", out.stdout)
+
+    def test_plain_state_does_not_fetch(self):
+        self.clones.other_pushes("src/a.py")
+        self.assertNotIn("origin/main has", self.clones.state().stdout)
+        self.clones.state("--fetch")
+        self.assertIn("origin/main has 1 commit", self.clones.state().stdout)
+
+    def test_names_shared_files_and_features_that_changed(self):
+        self.clones.other_pushes("specs/000-foundation/spec.md")
+        self.clones.other_pushes(".specify/memory/constitution.md")
+        self.clones.other_pushes("scripts/gate.ps1")
+        self.clones.other_pushes("specs/003-other/spec.md")
+        out = self.clones.state("--fetch").stdout
+        self.assertIn("origin/main has 4 commits", out)
+        self.assertIn("shared changed: .specify/memory/constitution.md, scripts/gate.ps1, specs/000-foundation/spec.md", out)
+        self.assertIn("change.md", out)
+        self.assertIn("features changed: specs/003-other", out)
+
+    def test_a_feature_only_change_names_no_shared_files(self):
+        self.clones.other_pushes("specs/003-other/spec.md")
+        self.assertNotIn("shared changed", self.clones.state("--fetch").stdout)
+
+    def test_lists_other_branches_still_in_progress(self):
+        self.clones.other_pushes("specs/003-other/spec.md", ref="refs/heads/003-other")
+        self.assertIn("other branches: origin/003-other", self.clones.state("--fetch").stdout)
+
+    def test_an_unreachable_origin_never_stops_the_state(self):
+        TwoClones.git(self.clones.repo.root, "remote", "set-url", "origin", str(self.clones.origin) + "-gone")
+        out = self.clones.state("--fetch")
+        self.assertEqual(out.returncode, 0)
+        self.assertIn("STATE=", out.stdout)
+        self.assertIn("could not reach origin", out.stdout)
+
+    def test_no_remote_says_nothing(self):
+        repo = Repo()
+        self.addCleanup(repo.close)
+        out = run(repo.root, "state", "--fetch")
+        self.assertEqual(out.returncode, 0)
+        self.assertNotIn("origin", out.stdout)
+
+
+class HooksInstalledTest(unittest.TestCase):
+    def setUp(self):
+        self.repo = Repo()
+        self.addCleanup(self.repo.close)
+
+    def hook(self, name):
+        (self.repo.root / ".git/hooks" / name).write_text("#!/bin/sh\n", encoding="utf-8")
+
+    def test_warns_when_a_clone_has_no_hooks(self):
+        self.assertIn("run `pre-commit install`", self.repo.state())
+
+    def test_warns_when_the_push_hook_is_missing(self):
+        self.hook("pre-commit")
+        self.assertIn("run `pre-commit install`", self.repo.state())
+
+    def test_silent_when_both_are_installed(self):
+        self.hook("pre-commit")
+        self.hook("pre-push")
+        self.assertNotIn("pre-commit install", self.repo.state())
+
+    def test_silent_during_setup_which_installs_them(self):
+        self.repo.write("scripts/gate.ps1", "# GATE-NOT-CONFIGURED\nexit 1\n")
+        self.assertNotIn("pre-commit install", self.repo.state())
+
+
+class PushCheckTest(unittest.TestCase):
+    def setUp(self):
+        self.clones = TwoClones()
+        self.addCleanup(self.clones.close)
+
+    def check(self):
+        return run(self.clones.repo.root, "pushcheck")
+
+    def test_passes_when_clean_and_up_to_date(self):
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_refuses_a_branch_that_lacks_origin_main(self):
+        self.clones.other_pushes("src/a.py")
+        r = self.check()
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("origin/main", r.stderr)
+        self.assertIn("merge", r.stderr)
+
+    def test_passes_once_merged(self):
+        self.clones.other_pushes("src/a.py")
+        self.check()
+        TwoClones.git(self.clones.repo.root, "merge", "-q", "--no-edit", "origin/main")
+        self.assertEqual(self.check().returncode, 0)
+
+    def test_refuses_uncommitted_changes_because_the_gate_would_test_them(self):
+        self.clones.repo.write("src/new.py", "x\n")
+        r = self.check()
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("uncommitted", r.stderr)
+
+    def test_refuses_when_origin_cannot_be_reached(self):
+        TwoClones.git(self.clones.repo.root, "remote", "set-url", "origin", str(self.clones.origin) + "-gone")
+        r = self.check()
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("could not reach origin", r.stderr)
+
+    def test_first_push_to_an_empty_origin_passes(self):
+        repo = Repo()
+        self.addCleanup(repo.close)
+        bare = Path(self.clones.tmp.name) / "empty.git"
+        subprocess.run(["git", "init", "-q", "--bare", str(bare)], check=True)
+        TwoClones.git(repo.root, "remote", "add", "origin", str(bare))
+        self.assertEqual(run(repo.root, "pushcheck").returncode, 0)
+
+
 class GuardTest(unittest.TestCase):
     def setUp(self):
         self.repo = Repo()
