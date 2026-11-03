@@ -29,7 +29,7 @@ repos:
         fail_fast: true
       - id: gate
         name: gate (scripts/gate.ps1)
-        entry: pwsh -NoProfile -File scripts/gate.ps1
+        entry: python -I .claude/hooks/flow.py gate
         language: system
         pass_filenames: false
         always_run: true

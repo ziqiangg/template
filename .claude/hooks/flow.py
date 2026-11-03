@@ -5,6 +5,7 @@
   stop    block finishing while a hard rule is broken (Stop / SubagentStop, exit 2)
   verify  the same checks for pre-commit (exit 1)
   pushcheck  refuse a push with uncommitted changes or without origin's main branch merged (pre-push, exit 1)
+  gate    run scripts/gate.ps1, skipped when these exact files already passed (pre-commit, pre-push)
   refs    list every file that names a term (blast radius of a change)
   rehash  record the hashes of the fixed files (a person runs this, never Claude)
 """
@@ -23,6 +24,7 @@ FIXED_GLOBS = ["CLAUDE.md", ".claude/settings.json", ".claude/hooks/flow.py",
                ".claude/hooks/tests/*.py", ".claude/instructions/*.md", ".claude/agents/*.md"]
 GATE = "scripts/gate.ps1"
 GATE_STUB = "GATE-NOT-CONFIGURED"
+GATE_PASSED = "gate-passed"  # inside .git: the fingerprint of the files the gate last passed on
 CONSTITUTION = ".specify/memory/constitution.md"
 FOUNDATION = "specs/000-foundation/"
 FETCH_AT_START_S = 8  # below the SessionStart hook's timeout; a session must never wait on the network
@@ -208,6 +210,40 @@ def pushcheck():
     return None
 
 
+def fingerprint():
+    """The files the gate checks, as they are on disk: tracked files and untracked ones not ignored, each as
+    the blob git would store. Staged, unstaged or committed, the same files give the same value."""
+    blobs = {}
+    for entry in filter(None, git("ls-files", "-s", "-z").stdout.split("\0")):
+        meta, path = entry.split("\t", 1)
+        blobs[path] = meta.split()[1]
+    changed = [p for p in git("diff", "--name-only", "-z").stdout.split("\0") if p]
+    changed += [p for p in git("ls-files", "-o", "--exclude-standard", "-z").stdout.split("\0") if p]
+    for path in changed:
+        blobs.pop(path, None)
+    present = [p for p in changed if (ROOT / p).is_file()]
+    if present:
+        out = subprocess.run(["git", "-C", str(ROOT), "hash-object", "--stdin-paths"], input="\n".join(present),
+                             capture_output=True, text=True, encoding="utf-8", check=True).stdout.split()
+        blobs.update(zip(present, out))
+    listing = "".join(f"{path} {blob}\n" for path, blob in sorted(blobs.items()))
+    return hashlib.sha256(listing.encode("utf-8")).hexdigest()
+
+
+def gate():
+    """Each hook runs the gate; a repeat on files that already passed is skipped. A failure is never kept."""
+    record = ROOT / git("rev-parse", "--git-path", GATE_PASSED).stdout.strip()
+    before = fingerprint()
+    if record.is_file() and record.read_text(encoding="utf-8").strip() == before:
+        print("gate: skipped, these exact files already passed")
+        return 0
+    record.unlink(missing_ok=True)
+    code = subprocess.run(["pwsh", "-NoProfile", "-File", GATE], cwd=ROOT).returncode
+    if code == 0 and fingerprint() == before:  # a gate that changed files proves nothing about them
+        record.write_text(before + "\n", encoding="utf-8")
+    return code
+
+
 def problems():
     found = []
     hashes = recorded()
@@ -306,6 +342,8 @@ def main(argv):
         if reason:
             print(reason, file=sys.stderr)
             sys.exit(1)
+    elif command == "gate":
+        sys.exit(gate())
     elif command == "guard":
         guard(json.loads(sys.stdin.read()))
     elif command == "stop":

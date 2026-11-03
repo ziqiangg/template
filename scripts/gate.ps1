@@ -2,7 +2,8 @@
 # Run: pwsh -NoProfile -File scripts/gate.ps1 (it moves to the project root itself).
 # The workflow rules (flow.py verify) are a separate pre-commit step, not part of this file.
 # Rules: stop at the first failure with a non-zero exit; print only failures and one summary line;
-# never stage, commit or change files (no git add, no --fix). pre-commit runs this file on every commit.
+# never stage, commit or change files (no git add, no --fix). The hooks run it through `flow.py gate`,
+# which skips a repeat on files that already passed.
 #
 # GATE-NOT-CONFIGURED  <- delete this line when the commands below are filled in (SETUP state)
 

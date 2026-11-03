@@ -2,6 +2,7 @@
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -312,6 +313,74 @@ class PushCheckTest(unittest.TestCase):
         subprocess.run(["git", "init", "-q", "--bare", str(bare)], check=True)
         TwoClones.git(repo.root, "remote", "add", "origin", str(bare))
         self.assertEqual(run(repo.root, "pushcheck").returncode, 0)
+
+
+COUNTING_GATE = "Add-Content -Path $env:GATE_LOG -Value 'ran'\nexit [int]$env:GATE_EXIT\n"
+
+
+@unittest.skipUnless(shutil.which("pwsh"), "the gate runs with pwsh")
+class GateTest(unittest.TestCase):
+    """`flow.py gate` runs scripts/gate.ps1 once per set of files: a repeat on the same files is skipped."""
+
+    def setUp(self):
+        self.repo = Repo()
+        self.addCleanup(self.repo.close)
+        self.log = Path(self.repo.tmp.name + "-gate.log")
+        self.addCleanup(lambda: self.log.unlink(missing_ok=True))
+        self.repo.write("scripts/gate.ps1", COUNTING_GATE)
+        self.repo.write(".gitignore", "ignored/\n")
+        self.repo.commit()
+
+    def gate(self, exit_code=0):
+        env = {**os.environ, "CLAUDE_PROJECT_DIR": str(self.repo.root), "GATE_LOG": str(self.log),
+               "GATE_EXIT": str(exit_code)}
+        return subprocess.run([sys.executable, "-I", str(self.repo.root / ".claude/hooks/flow.py"), "gate"],
+                              capture_output=True, text=True, cwd=self.repo.root, env=env)
+
+    def runs(self):
+        return len(self.log.read_text(encoding="utf-8").splitlines()) if self.log.exists() else 0
+
+    def test_a_repeat_on_the_same_files_is_skipped(self):
+        self.assertEqual(self.gate().returncode, 0)
+        second = self.gate()
+        self.assertEqual(second.returncode, 0)
+        self.assertEqual(self.runs(), 1)
+        self.assertIn("skipped", second.stdout)
+
+    def test_a_changed_file_runs_it_again(self):
+        self.gate()
+        self.repo.write("CLAUDE.md", "router, changed\n")
+        self.gate()
+        self.assertEqual(self.runs(), 2)
+
+    def test_a_new_untracked_file_runs_it_again_but_an_ignored_one_does_not(self):
+        self.gate()
+        self.repo.write("ignored/cache.txt", "x\n")
+        self.gate()
+        self.assertEqual(self.runs(), 1)
+        self.repo.write("src/new.py", "x\n")
+        self.gate()
+        self.assertEqual(self.runs(), 2)
+
+    def test_staging_and_committing_the_same_files_does_not_run_it_again(self):
+        self.repo.write("src/a.py", "x\n")
+        self.gate()  # before the commit, unstaged (finish.md step 2)
+        subprocess.run(["git", "-C", str(self.repo.root), "add", "-A"], check=True)
+        self.gate()  # the commit hook, staged
+        self.repo.commit()
+        self.gate()  # the push hook, committed
+        self.assertEqual(self.runs(), 1)
+
+    def test_a_failure_is_reported_and_never_remembered(self):
+        self.assertEqual(self.gate(exit_code=1).returncode, 1)
+        self.assertEqual(self.gate().returncode, 0)
+        self.assertEqual(self.runs(), 2)
+
+    def test_the_record_is_kept_out_of_the_working_tree(self):
+        self.gate()
+        status = subprocess.run(["git", "-C", str(self.repo.root), "status", "--porcelain"],
+                                capture_output=True, text=True).stdout
+        self.assertEqual(status, "")
 
 
 class GuardTest(unittest.TestCase):

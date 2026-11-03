@@ -26,4 +26,4 @@ Follow `.claude/instructions/agent-contract.md`.
    | `firebase.json` | tests run against the Firebase emulators; security rules validated |
    | `cdk.json`, or a CloudFormation or SAM template | synthesize and validate only (`cdk synth`, `cfn-lint`) |
    | `app.yaml`, `cloudbuild.yaml` or another Google Cloud deploy config | validate only (`--dry-run` where offered) |
-6. Run `scripts/gate.ps1` for the whole repository. Report per the contract.
+6. Run the gate for the whole repository with `python -I .claude/hooks/flow.py gate`. Report per the contract.
