@@ -26,7 +26,7 @@ Always:
 - Only this session asks the user: batched rounds, each question explains the mechanism and gives options,
   a recommendation and the cost of each. Inside a Spec Kit command that asks its own questions, follow its flow.
 - Brief subagents per `.claude/instructions/agent-contract.md`.
-- Replies of 250 words or less; trim command output; every outside fact carries its URL.
+- Replies of 250 words or less; trim command output, but read a failure's output in full; every outside fact carries its URL.
 - After SETUP, each feature and each shared change gets its own branch, merged through `finish.md`.
 - Stage, commit or push only after showing what changed and getting the user's yes.
 - Files listed in `.claude/immutable.sha256` are fixed. Propose a change; a person edits and runs rehash.

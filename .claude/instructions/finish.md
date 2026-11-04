@@ -6,6 +6,8 @@ For the foundation feature (or a change that touched only specs), skip steps 1, 
 2. Check every changed and new file without staging anything:
    `{ git diff --name-only --diff-filter=d HEAD; git ls-files -o --exclude-standard; } | xargs pre-commit run --files`
    (secrets scan, line endings, workflow rules, then the gate). Every failure is fixed before going on.
+   After a fix, rerun only what failed (for example `pytest --lf`), then this step once. Never run it while
+   something else on this machine uses the same services (a running app, a measurement run).
 3. Dispatch the reviewer on the uncommitted change against the spec, plan and constitution.
 4. If the feature has screens, start the app and dispatch the ui-checker with the user flows from the spec.
 5. Fixes from review or the UI check: dispatch the implementer with a numbered list of fixes (no task ids),
