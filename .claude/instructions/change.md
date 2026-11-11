@@ -8,6 +8,12 @@ screen map, a plan, or the constitution. It ends with every home updated, so not
    An outside fact → research.md.
 2. **Blast radius.** Run `python -I .claude/hooks/flow.py refs "<term>"` for each name, its common
    synonyms and word forms, and each FR or scenario id involved. List every hit and say for each: update, or unaffected and why.
+   For a new name too: before naming a value in a list, a setting key, a reason or text key, an API field or a shared code
+   name, search every feature's spec.md, plan.md and source code for the same concept, not only the
+   spelling you have in mind (`python -I .claude/hooks/flow.py refs "<word>"` for each plain word that
+   describes it). Do not skim: be thorough, read every hit, and scan all features' documents and source
+   code. Reuse a name another feature already uses; a name two features need is recorded in the
+   foundation spec.
 3. **Ask.** Show the user the change and the blast radius in one round; get a yes. If the user's answer in
    a question round already chose this change and the blast radius touches only the home named in that
    question, proceed and report the blast radius instead of asking again.

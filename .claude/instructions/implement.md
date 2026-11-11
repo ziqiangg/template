@@ -3,7 +3,7 @@
 0. Before the first phase (no task in tasks.md ticked yet), run `/speckit-analyze`. It is read-only: show
    its report in the reply, never save it to a file. Fix every CRITICAL and HIGH finding at its source
    (spec, plan or tasks) and run it again; ask the user about any finding that needs a decision.
-1. Every item in `checklists/` must be ticked by the user's approval (plan.md step 5); otherwise settle
+1. Every item in `checklists/` must be ticked by the user's approval (plan.md step 6); otherwise settle
    them with the user first, because `/speckit-implement` stops on unticked items.
 2. Pick the next unchecked phase in tasks.md. Dispatch the implementer with a brief per agent-contract.md:
    the feature path, the phase and task ids, the acceptance scenarios that phase must satisfy, and the

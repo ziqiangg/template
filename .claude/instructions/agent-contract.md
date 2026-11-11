@@ -20,6 +20,12 @@ If they disagree, or the brief disagrees with them, stop and report it as a ques
   Google Cloud or any other); local emulators and dry runs only. A step that needs more is a QUESTION.
 - Outside facts carry a URL from official docs, standards, papers, GitHub or Hugging Face; otherwise
   UNVERIFIED.
+- Before naming a value in a list, a setting key, a reason or text key, an API field or a shared code
+  name, search every feature's spec.md, plan.md and source code for the same concept, not only the
+  spelling you have in mind (`python -I .claude/hooks/flow.py refs "<word>"` for each plain word that
+  describes it). Do not skim: be thorough, read every hit, and scan all features' documents and source
+  code. Reuse a name another feature already uses; a name two features need is recorded in the
+  foundation spec.
 - Stay within the brief. Anything else you notice goes in the report, not in the code.
 
 ## Report (end every task with this)
