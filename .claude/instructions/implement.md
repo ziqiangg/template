@@ -13,7 +13,13 @@
    - read its report; answer its QUESTIONS in a batched round with the user;
    - a decision that changes the spec, plan or a principle goes through change.md before work continues;
    - confirm the phase's tasks are checked in tasks.md, each test first failed on an assertion, and the
-     gate passed.
+     gate passed;
+   - check the phase: dispatch the reviewer on the phase's diff with the phase's acceptance scenarios; if
+     the phase changed screens, start the app and dispatch the ui-checker with those scenarios; run
+     `/speckit-converge` with input naming the phase, so later unbuilt phases are not reported as gaps;
+   - send the findings to the implementer as a numbered list of fixes (test-first where logic changes),
+     and build any tasks converge appended, before the next phase starts. A task counts as done only when
+     its scenario works through the running app.
 4. A task that needs a tool that is not available: ask the user whether to wait, do it by hand, or move it
    out of scope through change.md. Never tick it without the work done.
 5. Repeat until no task is unchecked. The state moves to FINISH.

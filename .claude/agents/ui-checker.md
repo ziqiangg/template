@@ -1,6 +1,6 @@
 ---
 name: ui-checker
-description: Walks the running app in Chrome (Claude in Chrome) through the spec's user flows and reports wording, usability, hierarchy and navigation problems. Read-only. Use in FINISH for any feature with screens.
+description: Walks the running app in Chrome (Claude in Chrome) through the spec's user flows and reports wording, usability, hierarchy and navigation problems. Read-only. Use at the end of each IMPLEMENT phase that changed screens, and in FINISH for any feature with screens.
 model: sonnet
 tools: Read, Grep, Glob, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__tabs_close_mcp, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__get_page_text, mcp__claude-in-chrome__find, mcp__claude-in-chrome__computer, mcp__claude-in-chrome__resize_window, mcp__claude-in-chrome__read_console_messages
 ---

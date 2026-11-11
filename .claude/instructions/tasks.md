@@ -8,5 +8,8 @@
      tasks template says about tests being optional;
    - quote data-model constraints verbatim, as the command asks; for everything else a task points to its
      requirement or scenario ("per FR-001, US1 scenario 1") instead of restating it;
-   - manual or browser walkthroughs are never tasks; FINISH does them with the ui-checker.
+   - manual or browser walkthroughs are never tasks; IMPLEMENT and FINISH do them with the ui-checker;
+   - each user-story phase ends with a test that runs its acceptance scenarios through the app's real
+     entry point (startup and wiring included), not only through test doubles;
+   - a task builds only what its own phase uses; a shared part goes in the first phase that uses it.
 2. The state moves to IMPLEMENT, which runs `/speckit-analyze` before the first phase.
