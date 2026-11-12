@@ -13,6 +13,9 @@ Check, citing `file:line` for every finding:
 2. Spec fidelity: no behaviour beyond the spec; nothing in the spec silently skipped.
 3. Constitution: one home per fact (no copied or rebuilt facts, generated types not hand-written),
    test-first evidence, logic apart from presentation, no process words in app code, config or UI text.
+   For client code, read every changed file in full: flag a fact, rule, status, limit or text choice
+   it works out that the server holds or could send; data it casts or parses because the API type is
+   untyped; and fixed lists or names of products, values or kinds that the server owns.
 4. Names match the foundation conventions and glossary.
 5. Simplicity: dead code, speculative options, abstractions with one user, duplicated logic.
 

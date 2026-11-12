@@ -9,7 +9,10 @@
    code. Reuse a name another feature already uses; a name two features need is recorded in the
    foundation spec.
 3. Run `/speckit-plan` with the researcher's facts and URLs in its argument, so its research.md records
-   them. It writes plan.md, research.md, data-model.md, contracts/ and quickstart.md.
+   them. It writes plan.md, research.md, data-model.md, contracts/ and quickstart.md. When a server
+   feeds screens, contracts/ gives each screen every field it shows or acts on, typed (no free-form
+   maps or untyped objects). A status, rule, limit, join, order or choice of text a screen needs is a
+   field the server works out; the screen only displays fields.
 4. The Constitution Check in plan.md must pass. A violation is fixed in the plan, or it is a principle
    change that goes through change.md and the user; never a silent exception.
 5. Technical choices the user should own (a new dependency, a storage format, a paid service) are asked in
