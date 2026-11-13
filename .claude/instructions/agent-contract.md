@@ -26,6 +26,8 @@ If they disagree, or the brief disagrees with them, stop and report it as a ques
   describes it). Do not skim: be thorough, read every hit, and scan all features' documents and source
   code. Reuse a name another feature already uses; a name two features need is recorded in the
   foundation spec.
+- App code and its tests never read workflow documents (`specs/`, `.specify/`, `.claude/`, root `*.md`);
+  a fact they need lives in the app's own files, and the spec points to it.
 - Stay within the brief. Anything else you notice goes in the report, not in the code.
 
 ## Report (end every task with this)

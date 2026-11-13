@@ -25,6 +25,7 @@ FIXED_GLOBS = ["CLAUDE.md", ".claude/settings.json", ".claude/hooks/flow.py",
 GATE = "scripts/gate.ps1"
 GATE_STUB = "GATE-NOT-CONFIGURED"
 GATE_PASSED = "gate-passed"  # inside .git: the fingerprint of the files the gate last passed on
+NOT_APP = ("specs/", ".specify/", ".claude/")  # workflow documents, as is every *.md at the root
 CONSTITUTION = ".specify/memory/constitution.md"
 FOUNDATION = "specs/000-foundation/"
 FETCH_AT_START_S = 8  # below the SessionStart hook's timeout; a session must never wait on the network
@@ -211,8 +212,9 @@ def pushcheck():
 
 
 def fingerprint():
-    """The files the gate checks, as they are on disk: tracked files and untracked ones not ignored, each as
-    the blob git would store. Staged, unstaged or committed, the same files give the same value."""
+    """The app files the gate checks, as they are on disk: tracked files and untracked ones not ignored, each as
+    the blob git would store; workflow documents are left out, so a change to them alone gives the same value.
+    Staged, unstaged or committed, the same files give the same value."""
     blobs = {}
     for entry in filter(None, git("ls-files", "-s", "-z").stdout.split("\0")):
         meta, path = entry.split("\t", 1)
@@ -226,12 +228,13 @@ def fingerprint():
         out = subprocess.run(["git", "-C", str(ROOT), "hash-object", "--stdin-paths"], input="\n".join(present),
                              capture_output=True, text=True, encoding="utf-8", check=True).stdout.split()
         blobs.update(zip(present, out))
-    listing = "".join(f"{path} {blob}\n" for path, blob in sorted(blobs.items()))
+    app = {p: b for p, b in blobs.items() if not p.startswith(NOT_APP) and not ("/" not in p and p.endswith(".md"))}
+    listing = "".join(f"{path} {blob}\n" for path, blob in sorted(app.items()))
     return hashlib.sha256(listing.encode("utf-8")).hexdigest()
 
 
 def gate():
-    """Each hook runs the gate; a repeat on files that already passed is skipped. A failure is never kept."""
+    """Each hook runs the gate; a repeat on app files that already passed is skipped. A failure is never kept."""
     record = ROOT / git("rev-parse", "--git-path", GATE_PASSED).stdout.strip()
     before = fingerprint()
     if record.is_file() and record.read_text(encoding="utf-8").strip() == before:

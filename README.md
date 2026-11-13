@@ -75,8 +75,10 @@ Each developer works in their own clone, on their own branch and feature. The ac
 | Session start | Fetches origin and prints new commits on the main branch, shared files and features that changed, and other branches in progress |
 | Push | Refuses uncommitted changes or a branch without origin's main branch merged, then runs the gate, so both people's work is tested together |
 
-The commit and push hooks run the gate through `flow.py gate`, which skips a repeat on files that already passed
-(tracked files and untracked ones not ignored). To force a full run, delete `.git/gate-passed`.
+The commit and push hooks run the gate through `flow.py gate`, which skips a repeat on app files that already passed
+(tracked files and untracked ones not ignored). Workflow documents (`specs/`, `.specify/`, `.claude/` and the
+`*.md` files at the root) are not app files: a commit or push that changes only them runs the fast checks, not
+the gate. To force a full run, delete `.git/gate-passed`.
 
 The session-start check only runs when a session starts; the push check covers what happens after that. There
 is no hosted CI, so the main branch stays protected only by these hooks and by merging through pull requests.
