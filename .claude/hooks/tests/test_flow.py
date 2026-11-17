@@ -348,10 +348,17 @@ class GateTest(unittest.TestCase):
         self.assertIn("skipped", second.stdout)
 
     def test_a_changed_file_runs_it_again(self):
+        self.repo.write("src/a.py", "x\n")
+        self.gate()
+        self.repo.write("src/a.py", "y\n")
+        self.gate()
+        self.assertEqual(self.runs(), 2)
+
+    def test_a_changed_workflow_file_does_not_run_it_again(self):
         self.gate()
         self.repo.write("CLAUDE.md", "router, changed\n")
         self.gate()
-        self.assertEqual(self.runs(), 2)
+        self.assertEqual(self.runs(), 1)
 
     def test_a_new_untracked_file_runs_it_again_but_an_ignored_one_does_not(self):
         self.gate()
