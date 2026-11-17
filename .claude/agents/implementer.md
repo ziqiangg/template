@@ -32,5 +32,6 @@ Follow `.claude/instructions/agent-contract.md`.
    `tail -f` or a loop that does not end. If a test fails in the gate but passes alone, name it in your
    report and rerun the gate at most once. Report per the contract.
 7. When you rename or remove a list value, text key or catalogue entry, search the tests and the code for
-   the old value (`rg <old>`) and update every match in the same edit. Keep each file's formatting; run the
-   formatter only on the files you changed.
+   the old value (`rg <old>`) and update every match in the same edit. Keep each file's formatting: run the
+   repo's formatter only on the files you changed, and let its config file decide the style (never pass
+   style flags).
