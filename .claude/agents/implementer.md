@@ -27,4 +27,10 @@ Follow `.claude/instructions/agent-contract.md`.
    | `firebase.json` | tests run against the Firebase emulators; security rules validated |
    | `cdk.json`, or a CloudFormation or SAM template | synthesize and validate only (`cdk synth`, `cfn-lint`) |
    | `app.yaml`, `cloudbuild.yaml` or another Google Cloud deploy config | validate only (`--dry-run` where offered) |
-6. Run the gate for the whole repository with `python -I .claude/hooks/flow.py gate`. Report per the contract.
+6. Run the gate for the whole repository with `python -I .claude/hooks/flow.py gate`, in the foreground,
+   and run nothing else that runs tests while it runs: one test process at a time. Never watch output with
+   `tail -f` or a loop that does not end. If a test fails in the gate but passes alone, name it in your
+   report and rerun the gate at most once. Report per the contract.
+7. When you rename or remove a list value, text key or catalogue entry, search the tests and the code for
+   the old value (`rg <old>`) and update every match in the same edit. Keep each file's formatting; run the
+   formatter only on the files you changed.

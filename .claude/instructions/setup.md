@@ -39,6 +39,9 @@ lint, type, test and build commands, plus the command of each conditional check 
 pinned as a dev dependency in `<dir>/package.json` and run as `npm --prefix <dir> exec -- react-doctor
 <dir> --verbose --blocking error`; npm runs it from the repo root, so name `<dir>`; or `firebase
 emulators:exec "<test command>"` with `firebase.json`).
+Order the steps cheapest first (lint, format check, type checks, fast unit tests, then slow tests and
+builds), and split a slow test suite so its fast tests run early. Each formatter gets a config file that
+matches the code's style (for example `.prettierrc`) and a check step, so formatting never drifts.
 The script already stops at the first failure and prints only failures and a summary. Never add `git add`,
 `--fix` or `pre-commit` to it (pre-commit runs the gate).
 
