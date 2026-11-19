@@ -34,4 +34,6 @@ rule goes into the foundation through change.md, never into the feature spec.
 3. From an up-to-date main branch, create the branch: `git switch -c <NNN-name>`.
 4. Run `/speckit-specify` with the summary as its argument, starting with
    `SPECIFY_FEATURE_DIRECTORY=specs/<NNN-name>`. It creates the feature folder and `.specify/feature.json`.
+   The argument never tells it to leave another feature's files unedited, and never asks it to write changes to
+   another feature as this feature's requirements; those go through `change.md`.
 5. The state moves to CLARIFY.

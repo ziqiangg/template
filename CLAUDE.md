@@ -23,6 +23,9 @@ developers pushed: tell the user, and propose the merge they call for.
 Always:
 - One home per fact: product behaviour in `specs/<feature>/`, principles in
   `.specify/memory/constitution.md`, gate commands in `scripts/gate.ps1`. Edit in place; git history is the archive.
+  A feature that changes another feature's behaviour edits that feature's spec in place (`change.md`); it never
+  states the change as its own requirement, and never briefs a Spec Kit command not to edit another feature.
+  Specs never cite or point to files outside `specs/`, `.specify/` and the code.
 - Only this session asks the user: batched rounds, each question explains the mechanism and gives options,
   a recommendation and the cost of each. Inside a Spec Kit command that asks its own questions, follow its flow.
 - Brief subagents per `.claude/instructions/agent-contract.md`.

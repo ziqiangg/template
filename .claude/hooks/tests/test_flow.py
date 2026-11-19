@@ -519,6 +519,19 @@ class StopAndVerifyTest(unittest.TestCase):
         })
         self.assertEqual(self.stop().returncode, 0)
 
+    def test_override_of_another_features_requirement_blocks(self):
+        self.repo.feature("003-x", **{"spec.md": "s\n\n- FR-R04: the trace. This\n  changes 001 FR-W05.\n"})
+        r = run(self.repo.root, "verify")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("specs/003-x/spec.md:3 overrides 001", r.stdout + r.stderr)
+
+    def test_pointer_own_override_and_tasks_are_fine(self):
+        self.repo.feature("003-x", **{
+            "spec.md": "As 001 FR-W05 says.\n\nFR-R04 changes 003 FR-R03.\n",
+            "tasks.md": "- [X] T1 this changes 001 FR-W05\n",
+        })
+        self.assertEqual(run(self.repo.root, "verify").returncode, 0)
+
     def test_stop_hook_active_never_blocks(self):
         self.repo.write(".claude/instructions/plan.md", "edited\n")
         self.assertEqual(self.stop(active=True).returncode, 0)

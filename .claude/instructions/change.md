@@ -6,6 +6,10 @@ screen map, a plan, or the constitution. It ends with every home updated, so not
 1. **Classify.** A term, naming rule or screen → `specs/000-foundation`. A story or requirement → the
    feature spec that builds it. A principle → the constitution. A technical choice → the plan.
    An outside fact → research.md.
+   A requirement that changes what another feature already specifies belongs to that feature: its home is the
+   other feature's spec, edited in place under step 4 (or, if that feature is on another developer's branch,
+   raised to them as step 5 says). The changing feature may point to it ("as 001 FR-W05 says"); it never
+   restates it, overrides it ("this changes 001 FR-W05") or lists edits for other documents.
 2. **Blast radius.** Run `python -I .claude/hooks/flow.py refs "<term>"` for each name, its common
    synonyms and word forms, and each FR or scenario id involved. List every hit and say for each: update, or unaffected and why.
    For a new name too: before naming a value in a list, a setting key, a reason or text key, an API field or a shared code
@@ -38,3 +42,6 @@ screen map, a plan, or the constitution. It ends with every home updated, so not
 6. **Close.** Run `refs` again: no stale hit remains, except in ticked tasks (they record what was built at
    the time). Run `flow.py state`: the active feature is the one that was in progress, and any `unfinished:`
    line is expected. The state continues at IMPLEMENT or FINISH.
+   Then search every feature's documents for the facts this change touched (`refs` on each FR id and key term):
+   each fact is stated in exactly one home, and every other mention is a pointer to it. `flow.py verify`
+   rejects override sentences in `specs/`.

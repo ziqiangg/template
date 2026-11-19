@@ -38,6 +38,8 @@ REFS_SKIP = (".claude/", ".specify/scripts/", ".specify/templates/", ".specify/i
 LOCAL_SETTINGS = ".claude/settings.local.json"
 FIXED_MESSAGE = "{name} is a fixed workflow file. Propose the change; a person edits it and runs rehash."
 PLACEHOLDER = re.compile(r"\[[A-Z][A-Z0-9]*_[A-Z0-9_]+\]")  # Spec Kit tokens always contain "_"
+OVERRIDE = re.compile(r"\b(?:changes|overrides|replaces|supersedes)\s+(?:the\s+[^.]{0,40}?\s+of\s+)?"
+                      r"(\d{3})\s+FR-[A-Z]*\d+", re.I)  # "this changes 001 FR-W05": edit 001 instead
 HARMLESS_REDIRECT = re.compile(r"\d?>&\d|\d?>\s*(/dev/null|\$null|NUL)\b", re.I)
 WRITE_HINT = re.compile(r">|\b(sed\s+-i|tee|rm|mv|truncate|Set-Content|Add-Content|Out-File|"
                         r"Remove-Item|Move-Item|Copy-Item|git\s+(checkout|restore|rm|mv))\b")
@@ -265,6 +267,23 @@ def problems():
             ok = item.name in SPEC_KIT_FILES if item.is_file() else item.name in SPEC_KIT_DIRS
             if not ok:
                 found.append(f"{name}/{item.name} is not a Spec Kit file: move it out of specs/")
+        for doc in sorted(folder.rglob("*.md")):
+            if doc.name != "tasks.md":  # ticked tasks record history
+                found += overrides(doc, folder.name[:3])
+    return found
+
+
+def overrides(doc, own):
+    found, start = [], 1
+    lines = doc.read_text(encoding="utf-8").splitlines() + [""]
+    for number, line in enumerate(lines, 1):  # match per paragraph, so a wrapped sentence is caught
+        if line.strip():
+            continue
+        match = OVERRIDE.search(" ".join(lines[start - 1:number - 1]))
+        if match and match.group(1) != own:
+            found.append(f"{rel(doc.relative_to(ROOT))}:{start} overrides {match.group(1)}'s requirement: "
+                         "edit that feature's spec in place (change.md)")
+        start = number + 1
     return found
 
 
